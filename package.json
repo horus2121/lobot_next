@@ -9,7 +9,7 @@
     "lint": "next lint",
     "format": "prettier --check --ignore-path .gitignore .",
     "format-fix": "prettier --write --ignore-path .gitignore .",
-    "api-test": "curl -X POST http://localhost:3000/api/lobot -H \"Content-Type: application/json\" -d '{\"prompt\": \"Hello\"}' "
+    "api-test": "curl -X POST http://localhost:3000/api/lobot -H \"Content-Type: application/json; charset=utf-8\" -d '{\"prompt\": \"Hello\"}' "
   },
   "dependencies": {
     "@radix-ui/react-form": "^0.0.2",

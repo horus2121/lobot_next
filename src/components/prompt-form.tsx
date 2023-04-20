@@ -2,25 +2,41 @@ import React from 'react'
 import * as Form from '@radix-ui/react-form'
 import { styled } from '@stitches/react'
 
-export const PromptForm = () => (
-  <FormRoot>
-    <FormField name="email">
-      <Flex css={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <FormLabel>Prompt</FormLabel>
-        <FormMessage match="valueMissing">Please enter your prompt</FormMessage>
-        <FormMessage match="typeMismatch">
-          Please provide a valid prompt
-        </FormMessage>
-      </Flex>
-      <Form.Control asChild>
-        <Input type="email" required />
-      </Form.Control>
-    </FormField>
-    <Form.Submit asChild>
-      <Button css={{ marginTop: 10 }}>Send prompt</Button>
-    </Form.Submit>
-  </FormRoot>
-)
+type PromptFormProps = {
+  onSubmit: (prompt: string) => void
+}
+
+export const PromptForm: React.FC<PromptFormProps> = ({ onSubmit }) => {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault()
+    const prompt = (e.target as HTMLFormElement | undefined)?.prompt
+      .value as string
+
+    onSubmit(prompt)
+  }
+
+  return (
+    <FormRoot onSubmit={handleSubmit}>
+      <FormField name="text">
+        <Flex css={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <FormLabel>Prompt</FormLabel>
+          <FormMessage match="valueMissing">
+            Please enter your prompt
+          </FormMessage>
+          <FormMessage match="typeMismatch">
+            Please provide a valid prompt
+          </FormMessage>
+        </Flex>
+        <Form.Control asChild>
+          <Input type="text" name="prompt" required />
+        </Form.Control>
+      </FormField>
+      <Form.Submit asChild>
+        <Button css={{ marginTop: 10 }}>Send prompt</Button>
+      </Form.Submit>
+    </FormRoot>
+  )
+}
 
 const FormRoot = styled(Form.Root, {})
 

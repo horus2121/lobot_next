@@ -36,6 +36,76 @@ const Container = styled('div', {
 })
 
 export default function Home() {
+  const [promptOutput, setPromptOutput] = useState('')
+
+  async function streamResponse(
+    reader: ReadableStreamDefaultReader<Uint8Array>
+  ): Promise<string> {
+    return await new Promise((resolve) => {
+      const decoder = new TextDecoder()
+      let result = ''
+      const readChunk = ({
+        done,
+        value
+      }: ReadableStreamReadResult<Uint8Array>) => {
+        if (done) {
+          resolve(result)
+          return
+        }
+
+        const output = decoder
+          .decode(value)
+          .replaceAll('[33m', '')
+          .replaceAll('[32m', '')
+          .replaceAll('[1m', '')
+          .replaceAll('[0m', '')
+        result += output
+        setPromptOutput((prev) => prev + output)
+        reader.read().then(readChunk)
+      }
+
+      reader.read().then(readChunk)
+    })
+  }
+  const chat = async (prompt: string) => {
+    const res = await fetch(`/api/lobot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8'
+      },
+      body: prompt
+    })
+    const reader = res.body?.getReader()
+
+    if (reader) {
+      const result = await streamResponse(reader)
+      return result
+        .split('\n')
+        .filter((line) => {
+          return !line.startsWith('[Error]')
+        })
+        .join('\n')
+    } else {
+      return false
+    }
+  }
+
+  const handleStart = async () => {
+    const res = await (await fetch('/api/lobot')).json()
+
+    console.log(res)
+  }
+
+  const handleExit = async () => {
+    const res = await (
+      await fetch('/api/lobot', {
+        method: 'DELETE'
+      })
+    ).json()
+
+    console.log(res)
+  }
+
   return (
     <Box css={{ paddingY: '$6' }}>
       <Head>
@@ -46,16 +116,18 @@ export default function Home() {
         <TabsRoot>
           <TabsList>
             <TabsTrigger value="alpaca">Alpaca</TabsTrigger>
-            <TabsTrigger value="chatgpt">ChatGPT</TabsTrigger>
+            <TabsTrigger value="llama">Llama</TabsTrigger>
           </TabsList>
-          <PromptForm></PromptForm>
+          <PromptForm onSubmit={chat}></PromptForm>
           <TabsContent value="alpaca">
-            <Output>You're using Alpace model.</Output>
+            <Output>{promptOutput ? promptOutput : 'Alpaca!'}</Output>
           </TabsContent>
-          <TabsContent value="chatgpt">
-            <Output>You're using ChatGPT model.</Output>
+          <TabsContent value="llama">
+            <Output>You are using Llama model.</Output>
           </TabsContent>
         </TabsRoot>
+        <button onClick={handleStart}>start</button>
+        <button onClick={handleExit}>Exit</button>
       </Container>
     </Box>
   )
