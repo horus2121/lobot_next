@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { spawn, ChildProcess } from 'child_process'
 import path from 'path'
+import llama from '@/lib/llm'
 
 interface Worker {
   id: string
@@ -38,58 +39,116 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const id = '123'
 
   if (method === 'GET') {
-    const isProcessing = workerPool.workers.some((w) => w.id === id)
+    // const isProcessing = workerPool.workers.some((w) => w.id === id)
 
-    if (!isProcessing) {
-      startProcess('123')
-    }
-    console.log(workerPool)
+    // if (!isProcessing) {
+    //   startProcess('123')
+    // }
+    // console.log(workerPool)
 
-    res.status(200).json('Running')
+    // res.status(200).json('Running')
+
+    const template = `how are you`
+
+    const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+                    ### Instruction:
+
+                    ${template}
+
+                    ### Response:`
+    console.log(process.cwd())
+
+    llama.createCompletion(
+      {
+        prompt,
+        numPredict: 128,
+        temp: 0.2,
+        topP: 1,
+        topK: 40,
+        repeatPenalty: 1,
+        repeatLastN: 64,
+        seed: 0,
+        feedPrompt: true
+      },
+      (response) => {
+        console.log(response)
+        res.write(response.token)
+        process.stdout.write(response.token)
+      }
+    )
   }
 
   if (method === 'POST') {
-    const prompt = req.body
-    console.log('prompt', prompt)
+    const template = req.body
+    // console.log('prompt', prompt)
 
-    console.log('Worker pool', workerPool)
+    // console.log('Worker pool', workerPool)
 
-    const worker = workerPool.workers.find((w) => w.id === id)?.worker
+    // const worker = workerPool.workers.find((w) => w.id === id)?.worker
 
-    if (!worker) {
-      res.status(500).json('Something went wrong.')
-      return
-    }
+    // if (!worker) {
+    //   res.status(500).json('Something went wrong.')
+    //   return
+    // }
 
-    // worker.stdout?.on('data', (data) => {
-    //   const output = data.toString()
-    //   console.log(output)
+    // // worker.stdout?.on('data', (data) => {
+    // //   const output = data.toString()
+    // //   console.log(output)
+    // // })
+    // worker.stderr?.on('data', (data) => {
+    //   const error = data.toString()
+    //   console.log(error)
     // })
-    worker.stderr?.on('data', (data) => {
-      const error = data.toString()
-      console.log(error)
-    })
 
-    // const promptControl = new Transform({
-    //   transform(chunk, encoding, callback) {
-    //     const decoder = new TextDecoder()
-    //     this.push(chunk)
-    //     console.log('chunk', decoder.decode(chunk))
+    // // const promptControl = new Transform({
+    // //   transform(chunk, encoding, callback) {
+    // //     const decoder = new TextDecoder()
+    // //     this.push(chunk)
+    // //     console.log('chunk', decoder.decode(chunk))
 
-    //     callback()
-    //   }
+    // //     callback()
+    // //   }
+    // // })
+    // // promptControl.pipe(worker.stdin!)
+    // worker.stdin?.write(prompt.replaceAll('\n', '\\') + '\r\n')
+    // worker.stdin?.end()
+
+    // res.writeHead(200, {
+    //   'Content-Type': 'text/plain',
+    //   'Cache-Control': 'no-cache',
+    //   'Content-Encoding': 'none'
     // })
-    // promptControl.pipe(worker.stdin!)
-    worker.stdin?.write(prompt.replaceAll('\n', '\\') + '\r\n')
-    worker.stdin?.end()
 
-    res.writeHead(200, {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'no-cache',
-      'Content-Encoding': 'none'
-    })
+    // worker.stdout?.pipe(res)
 
-    worker.stdout?.pipe(res)
+    const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+                    ### Instruction:
+
+                    ${template}
+
+                    ### Response:`
+    console.log(process.cwd())
+
+    llama.createCompletion(
+      {
+        prompt,
+        numPredict: 128,
+        temp: 0.2,
+        topP: 1,
+        topK: 40,
+        repeatPenalty: 1,
+        repeatLastN: 64,
+        seed: 0,
+        feedPrompt: true
+      },
+      (response) => {
+        console.log(response)
+        res.write(response.token)
+        process.stdout.write(response.token)
+      }
+    )
   }
 
   if (method === 'DELETE') {

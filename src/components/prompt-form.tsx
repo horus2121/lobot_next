@@ -4,15 +4,21 @@ import { styled } from '@stitches/react'
 
 type PromptFormProps = {
   onSubmit: (prompt: string) => void
+  handlePrompt: (prompt: string) => void
 }
 
-export const PromptForm: React.FC<PromptFormProps> = ({ onSubmit }) => {
+export const PromptForm: React.FC<PromptFormProps> = ({
+  onSubmit,
+  handlePrompt
+}) => {
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault()
-    const prompt = (e.target as HTMLFormElement | undefined)?.prompt
-      .value as string
+    const promptField = (e.target as HTMLFormElement | undefined)?.prompt
+    const prompt = promptField.value
 
     onSubmit(prompt)
+    handlePrompt(prompt)
+    promptField.value = ''
   }
 
   return (

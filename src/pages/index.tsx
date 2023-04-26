@@ -36,6 +36,7 @@ const Container = styled('div', {
 })
 
 export default function Home() {
+  const [prompt, setPrompt] = useState('')
   const [promptOutput, setPromptOutput] = useState('')
 
   async function streamResponse(
@@ -43,7 +44,7 @@ export default function Home() {
   ): Promise<string> {
     return await new Promise((resolve) => {
       const decoder = new TextDecoder()
-      let result = ''
+      let result = 'Alpaca: '
       const readChunk = ({
         done,
         value
@@ -53,12 +54,7 @@ export default function Home() {
           return
         }
 
-        const output = decoder
-          .decode(value)
-          .replaceAll('[33m', '')
-          .replaceAll('[32m', '')
-          .replaceAll('[1m', '')
-          .replaceAll('[0m', '')
+        const output = decoder.decode(value).replaceAll('<end>', '---')
         result += output
         setPromptOutput((prev) => prev + output)
         reader.read().then(readChunk)
@@ -68,6 +64,7 @@ export default function Home() {
     })
   }
   const chat = async (prompt: string) => {
+    setPromptOutput((prev) => prev + 'Me: ' + prompt + '\nAlpaca: ')
     const res = await fetch(`/api/lobot`, {
       method: 'POST',
       headers: {
@@ -90,35 +87,19 @@ export default function Home() {
     }
   }
 
-  const handleStart = async () => {
-    const res = await (await fetch('/api/lobot')).json()
-
-    console.log(res)
-  }
-
-  const handleExit = async () => {
-    const res = await (
-      await fetch('/api/lobot', {
-        method: 'DELETE'
-      })
-    ).json()
-
-    console.log(res)
-  }
-
   return (
     <Box css={{ paddingY: '$6' }}>
       <Head>
         <title>Lobot.</title>
       </Head>
       <Container size={{ '@initial': '1', '@bp1': '2' }}>
-        <Text as="h1">Lobot.</Text>
-        <TabsRoot>
+        <Text as="h1">Lobot. &#129302;</Text>
+        <TabsRoot defaultValue="alpaca">
           <TabsList>
             <TabsTrigger value="alpaca">Alpaca</TabsTrigger>
             <TabsTrigger value="llama">Llama</TabsTrigger>
           </TabsList>
-          <PromptForm onSubmit={chat}></PromptForm>
+          <PromptForm onSubmit={chat} handlePrompt={setPrompt}></PromptForm>
           <TabsContent value="alpaca">
             <Output>{promptOutput ? promptOutput : 'Alpaca!'}</Output>
           </TabsContent>
@@ -126,8 +107,6 @@ export default function Home() {
             <Output>You are using Llama model.</Output>
           </TabsContent>
         </TabsRoot>
-        <button onClick={handleStart}>start</button>
-        <button onClick={handleExit}>Exit</button>
       </Container>
     </Box>
   )
