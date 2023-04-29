@@ -5,6 +5,7 @@ import { styled } from '@stitches/react'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from '@/components/tabs'
 import { Output } from '@/components/output'
 import { useState } from 'react'
+import { handleInstruction } from '@/utils/api-client'
 
 const Text = styled('p', {
   fontFamily: '$system',
@@ -36,55 +37,12 @@ const Container = styled('div', {
 })
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('')
-  const [promptOutput, setPromptOutput] = useState('')
+  const [insOutput, setInsOutput] = useState('')
 
-  async function streamResponse(
-    reader: ReadableStreamDefaultReader<Uint8Array>
-  ): Promise<string> {
-    return await new Promise((resolve) => {
-      const decoder = new TextDecoder()
-      let result = 'Alpaca: '
-      const readChunk = ({
-        done,
-        value
-      }: ReadableStreamReadResult<Uint8Array>) => {
-        if (done) {
-          resolve(result)
-          return
-        }
-
-        const output = decoder.decode(value).replaceAll('<end>', '---')
-        result += output
-        setPromptOutput((prev) => prev + output)
-        reader.read().then(readChunk)
-      }
-
-      reader.read().then(readChunk)
-    })
-  }
-  const chat = async (prompt: string) => {
-    setPromptOutput((prev) => prev + 'Me: ' + prompt + '\nAlpaca: ')
-    const res = await fetch(`/api/lobot`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8'
-      },
-      body: prompt
-    })
-    const reader = res.body?.getReader()
-
-    if (reader) {
-      const result = await streamResponse(reader)
-      return result
-        .split('\n')
-        .filter((line) => {
-          return !line.startsWith('[Error]')
-        })
-        .join('\n')
-    } else {
-      return false
-    }
+  const sendInstruction = async (instruction: string) => {
+    await handleInstruction(instruction, (output: string) =>
+      setInsOutput((prev) => prev + output)
+    )
   }
 
   return (
@@ -97,14 +55,14 @@ export default function Home() {
         <TabsRoot defaultValue="alpaca">
           <TabsList>
             <TabsTrigger value="alpaca">Alpaca</TabsTrigger>
-            <TabsTrigger value="llama">Llama</TabsTrigger>
+            <TabsTrigger value="summary">Artical Summary</TabsTrigger>
           </TabsList>
-          <PromptForm onSubmit={chat} handlePrompt={setPrompt}></PromptForm>
+          <PromptForm onSubmit={sendInstruction}></PromptForm>
           <TabsContent value="alpaca">
-            <Output>{promptOutput ? promptOutput : 'Alpaca!'}</Output>
+            <Output>{insOutput ? insOutput : 'Alpaca!'}</Output>
           </TabsContent>
-          <TabsContent value="llama">
-            <Output>You are using Llama model.</Output>
+          <TabsContent value="summary">
+            <Output>Provide an article.</Output>
           </TabsContent>
         </TabsRoot>
       </Container>
