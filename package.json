@@ -12,9 +12,11 @@
     "api-test": "curl -X POST http://localhost:3000/api/lobot -H \"Content-Type: application/json; charset=utf-8\" -d '{\"prompt\": \"Hello\"}' "
   },
   "dependencies": {
+    "@pinecone-database/pinecone": "^0.0.14",
     "@radix-ui/react-form": "^0.0.2",
     "@radix-ui/react-tabs": "^1.0.3",
     "@stitches/react": "^1.2.8",
+    "langchain": "^0.0.66",
     "llama-node": "^0.0.30",
     "next": "13.3.0",
     "react": "18.2.0",

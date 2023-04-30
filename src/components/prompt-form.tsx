@@ -20,7 +20,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ onSubmit }) => {
     <FormRoot onSubmit={handleSubmit}>
       <FormField name="text">
         <Flex css={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <FormLabel>Prompt</FormLabel>
+          <FormLabel>Alpaca</FormLabel>
           <FormMessage match="valueMissing">
             Please enter your prompt
           </FormMessage>
@@ -33,7 +33,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ onSubmit }) => {
         </Form.Control>
       </FormField>
       <Form.Submit asChild>
-        <Button css={{ marginTop: 10 }}>Send prompt</Button>
+        <Button css={{ marginTop: 10 }}>Send Message</Button>
       </Form.Submit>
     </FormRoot>
   )

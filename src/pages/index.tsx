@@ -37,12 +37,16 @@ const Container = styled('div', {
 })
 
 export default function Home() {
-  const [insOutput, setInsOutput] = useState('')
+  const [msgOutput, setMsgOutput] = useState('')
 
-  const sendInstruction = async (instruction: string) => {
-    await handleInstruction(instruction, (output: string) =>
-      setInsOutput((prev) => prev + output)
+  const sendMessage = async (msg: string) => {
+    await handleInstruction(msg, (output: string) =>
+      setMsgOutput((prev) => prev + output)
     )
+  }
+
+  const test = async () => {
+    await fetch('/api/lobot')
   }
 
   return (
@@ -57,12 +61,13 @@ export default function Home() {
             <TabsTrigger value="alpaca">Alpaca</TabsTrigger>
             <TabsTrigger value="summary">Artical Summary</TabsTrigger>
           </TabsList>
-          <PromptForm onSubmit={sendInstruction}></PromptForm>
           <TabsContent value="alpaca">
-            <Output>{insOutput ? insOutput : 'Alpaca!'}</Output>
+            <PromptForm onSubmit={sendMessage}></PromptForm>
+            <Output>{msgOutput ? msgOutput : 'Hi there!'}</Output>
           </TabsContent>
           <TabsContent value="summary">
             <Output>Provide an article.</Output>
+            <button onClick={test}>Test</button>
           </TabsContent>
         </TabsRoot>
       </Container>
